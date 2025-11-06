@@ -1,11 +1,27 @@
 package com.msproject.hrpayroll.service;
 
 import com.msproject.hrpayroll.entities.Payment;
+import com.msproject.hrpayroll.entities.Worker;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import java.util.HashMap;
+import java.util.Map;
 
+@RequiredArgsConstructor
 @Service
 public class PaymentService {
- public Payment getPayment(long workerId, int days){
-     return new Payment("Bob", 200.0, days); // para teste
+    @Value("${hr-worker.host}")
+    public String workerHost;
+
+    private final RestTemplate restTemplate;
+
+    public Payment getPayment(long workerId, int days){
+        Map<String, String> uriVariables = new HashMap<>();
+        uriVariables.put("id", ""+workerId);
+
+        Worker worker = restTemplate.getForObject(workerHost + "/workers/{id}", Worker.class, uriVariables);
+        return new Payment(worker.getName(), worker.getDailyIncome(), days);
  }
 }
