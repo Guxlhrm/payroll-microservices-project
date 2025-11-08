@@ -2,6 +2,7 @@ package com.msproject.hrpayroll.service;
 
 import com.msproject.hrpayroll.entities.Payment;
 import com.msproject.hrpayroll.entities.Worker;
+import com.msproject.hrpayroll.feignclient.WorkerFeignClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,16 +13,10 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Service
 public class PaymentService {
-    @Value("${hr-worker.host}")
-    public String workerHost;
-
-    private final RestTemplate restTemplate;
+    private final WorkerFeignClient workerFeignClient;
 
     public Payment getPayment(long workerId, int days){
-        Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("id", ""+workerId);
-
-        Worker worker = restTemplate.getForObject(workerHost + "/workers/{id}", Worker.class, uriVariables);
+        Worker worker = workerFeignClient.findById(workerId).getBody();
         return new Payment(worker.getName(), worker.getDailyIncome(), days);
  }
 }
